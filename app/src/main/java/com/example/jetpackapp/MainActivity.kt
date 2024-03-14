@@ -7,8 +7,8 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.example.jetpackapp.model.CustomeData
-import com.example.jetpackapp.model.CustomeDataDTO
+import com.example.jetpackapp.model.CustomData
+import com.example.jetpackapp.model.CustomDataDTO
 import com.example.jetpackapp.service.ApiService
 import com.example.jetpackapp.viewmodels.MainViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         val textView: TextView = findViewById(R.id.responseTextView)
 
         viewModel.text.observe(this, Observer {
@@ -47,9 +47,9 @@ class MainActivity : AppCompatActivity() {
             val response = apiService.getData() // Replace with respective calls
             withContext(Dispatchers.Main) {
                 val textView: TextView = findViewById(R.id.responseTextView)
-                val list: List<CustomeData>? = response.body()
+                val list: List<CustomData>? = response.body()
                 if (list != null) {
-                    textView.text = list.get(0).body
+                    textView.text = list[0].body
                 }
             }
         }
@@ -58,19 +58,24 @@ class MainActivity : AppCompatActivity() {
     fun postRequest(view: View) {
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.Main) {
+                try {
+                    val title: String = findViewById<EditText>(R.id.title).text.toString()
+                    val body: String = findViewById<EditText>(R.id.body).text.toString()
+                    val userId: Int =
+                        Integer.parseInt(findViewById<EditText>(R.id.userId).text.toString())
 
-                val title: String = findViewById<EditText>(R.id.title).text.toString()
-                val body: String = findViewById<EditText>(R.id.body).text.toString()
-                val userId: Int =
-                    Integer.parseInt(findViewById<EditText>(R.id.userId).text.toString())
+                    val customDataDTO = CustomDataDTO(title, body, userId, null)
 
-                val customeDataDTO = CustomeDataDTO(title, body, userId, null)
-
-                val response = apiService.postData(customeDataDTO) // Replace with respective calls
-                val textView: TextView = findViewById(R.id.responseTextView)
-                val customeData: CustomeDataDTO? = response.body()
-                if (customeData != null) {
-                    textView.text = customeData.toString()
+                    val response =
+                        apiService.postData(customDataDTO) // Replace with respective calls
+                    val textView: TextView = findViewById(R.id.responseTextView)
+                    val customData: CustomDataDTO? = response.body()
+                    if (customData != null) {
+                        textView.text = customData.toString()
+                    }
+                } catch (e: Exception) {
+                    popup("Error", "Invalid inputs")
+                    return@withContext;
                 }
             }
         }
@@ -80,12 +85,15 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
 
             withContext(Dispatchers.Main) {
-
-                val id: Int = Integer.parseInt(findViewById<EditText>(R.id.id).text.toString())
-
-                val response = apiService.deleteData(id) // Replace with respective calls
-                val textView: TextView = findViewById(R.id.responseTextView)
-                textView.text = response.toString()
+                try {
+                    val id: Int = Integer.parseInt(findViewById<EditText>(R.id.id).text.toString())
+                    val response = apiService.deleteData(id) // Replace with respective calls
+                    val textView: TextView = findViewById(R.id.responseTextView)
+                    textView.text = response.toString()
+                } catch (e: Exception) {
+                    popup("Error", "Invalid inputs")
+                    return@withContext;
+                }
             }
         }
     }
@@ -93,25 +101,33 @@ class MainActivity : AppCompatActivity() {
     fun putRequest(view: View) {
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.Main) {
+                try {
+                    val id: Int = Integer.parseInt(findViewById<EditText>(R.id.id).text.toString())
+                    val title: String = findViewById<EditText>(R.id.title).text.toString()
+                    val body: String = findViewById<EditText>(R.id.body).text.toString()
+                    val userId: Int =
+                        Integer.parseInt(findViewById<EditText>(R.id.userId).text.toString())
 
-                val id: Int = Integer.parseInt(findViewById<EditText>(R.id.id).text.toString())
-                val title: String = findViewById<EditText>(R.id.title).text.toString()
-                val body: String = findViewById<EditText>(R.id.body).text.toString()
-                val userId: Int =
-                    Integer.parseInt(findViewById<EditText>(R.id.userId).text.toString())
+                    val customeDataDTO = CustomDataDTO(title, body, userId, null)
 
-                val customeDataDTO = CustomeDataDTO(title, body, userId, null)
-
-                val response =
-                    apiService.putData(id, customeDataDTO) // Replace with respective calls
-                val textView: TextView = findViewById(R.id.responseTextView)
-                val customeData: CustomeDataDTO? = response.body()
-                if (customeData != null) {
-                    textView.text = customeData.toString()
+                    val response =
+                        apiService.putData(id, customeDataDTO) // Replace with respective calls
+                    val textView: TextView = findViewById(R.id.responseTextView)
+                    val customData: CustomDataDTO? = response.body()
+                    if (customData != null) {
+                        textView.text = customData.toString()
+                    }
+                } catch(e:Exception){
+                    popup("Error", "Invalid inputs")
+                    return@withContext;
                 }
             }
         }
     }
 
+    private fun popup(title: String, text: String) {
+        val dialogFragment = CustomDialog(title, text)
+        dialogFragment.show(supportFragmentManager, "customDialog")
+    }
 
 }
