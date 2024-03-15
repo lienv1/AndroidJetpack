@@ -73,6 +73,14 @@
             android:onClick="putRequest"
             />
 
+        <Button
+            android:id="@+id/SettingButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Setting"
+            android:onClick="openSetting"
+            />
+
         <TextView
             android:id="@+id/responseTextView"
             android:layout_width="match_parent"

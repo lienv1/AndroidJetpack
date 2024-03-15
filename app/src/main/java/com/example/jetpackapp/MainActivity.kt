@@ -1,5 +1,6 @@
 package com.example.jetpackapp
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.jetpackapp.model.CustomData
 import com.example.jetpackapp.model.CustomDataDTO
 import com.example.jetpackapp.service.ApiService
+import com.example.jetpackapp.setting.SettingsActivity
 import com.example.jetpackapp.viewmodels.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
     fun getRequest(view: View) {
         CoroutineScope(Dispatchers.IO).launch {
-            val response = apiService.getData() // Replace with respective calls
+            val response = apiService.getData()
             withContext(Dispatchers.Main) {
                 val textView: TextView = findViewById(R.id.responseTextView)
                 val list: List<CustomData>? = response.body()
@@ -67,7 +69,7 @@ class MainActivity : AppCompatActivity() {
                     val customDataDTO = CustomDataDTO(title, body, userId, null)
 
                     val response =
-                        apiService.postData(customDataDTO) // Replace with respective calls
+                        apiService.postData(customDataDTO)
                     val textView: TextView = findViewById(R.id.responseTextView)
                     val customData: CustomDataDTO? = response.body()
                     if (customData != null) {
@@ -87,11 +89,11 @@ class MainActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 try {
                     val id: Int = Integer.parseInt(findViewById<EditText>(R.id.id).text.toString())
-                    val response = apiService.deleteData(id) // Replace with respective calls
+                    val response = apiService.deleteData(id)
                     val textView: TextView = findViewById(R.id.responseTextView)
                     textView.text = response.toString()
                 } catch (e: Exception) {
-                    popup("Error", "Invalid inputs")
+                    popup("Error", "Invalid inputs: only id needed")
                     return@withContext;
                 }
             }
@@ -102,23 +104,22 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.Main) {
                 try {
-                    val id: Int = Integer.parseInt(findViewById<EditText>(R.id.id).text.toString())
-                    val title: String = findViewById<EditText>(R.id.title).text.toString()
-                    val body: String = findViewById<EditText>(R.id.body).text.toString()
-                    val userId: Int =
-                        Integer.parseInt(findViewById<EditText>(R.id.userId).text.toString())
+                    val id = Integer.parseInt(findViewById<EditText>(R.id.id).text.toString())
+                    val title = findViewById<EditText>(R.id.title).text.toString()
+                    val body = findViewById<EditText>(R.id.body).text.toString()
+                    val userId = if (findViewById<EditText>(R.id.userId).text.isNullOrEmpty()) null else Integer.parseInt(findViewById<EditText>(R.id.userId).text.toString())
 
-                    val customeDataDTO = CustomDataDTO(title, body, userId, null)
+                    val customDataDTO = CustomDataDTO(title, body, userId, null)
 
                     val response =
-                        apiService.putData(id, customeDataDTO) // Replace with respective calls
+                        apiService.putData(id, customDataDTO)
                     val textView: TextView = findViewById(R.id.responseTextView)
                     val customData: CustomDataDTO? = response.body()
                     if (customData != null) {
                         textView.text = customData.toString()
                     }
-                } catch(e:Exception){
-                    popup("Error", "Invalid inputs")
+                } catch (e: Exception) {
+                    popup("Error", "Invalid inputs: a valid id is required")
                     return@withContext;
                 }
             }
@@ -128,6 +129,11 @@ class MainActivity : AppCompatActivity() {
     private fun popup(title: String, text: String) {
         val dialogFragment = CustomDialog(title, text)
         dialogFragment.show(supportFragmentManager, "customDialog")
+    }
+
+    fun openSetting(view:View) {
+        val settingsIntent = Intent(this, SettingsActivity::class.java)
+        startActivity(settingsIntent)
     }
 
 }
